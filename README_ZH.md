@@ -1,5 +1,7 @@
 # 逃离鸭科夫 Mod —— Numerical Needs 状态显示
 
+[English](README.md)
+
 为游戏提供了更多信息显示。
 工坊链接：[创意工坊](https://steamcommunity.com/sharedfiles/filedetails/?id=3590948345)
 

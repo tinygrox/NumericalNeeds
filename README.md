@@ -1,5 +1,7 @@
 # Escape from Duckov Mod – Numerical Needs Display
 
+[中文](README_ZH.md)
+
 Provides additional in-game information displays for a clearer gameplay experience.
  Steam Workshop link: [Workshop Page](https://steamcommunity.com/sharedfiles/filedetails/?id=3590948345)
 
