@@ -1,4 +1,4 @@
-# Escape from Duckov Mod – Numerical Needs Display
+# Escape from Duckov Mod – Numerical Stats
 
 [中文](README_ZH.md)
 
