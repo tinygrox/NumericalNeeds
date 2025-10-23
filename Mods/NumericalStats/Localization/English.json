@@ -1,0 +1,8 @@
+{
+  "NumericalStats_ModOptionTitle": "[Mod]Numerical Stats",
+  "NumericalStats_ArmourStatsDisplay_NoItem": "Not Equipped",
+  "Options_ShowNumericalHealth": "Health Bar Numerical",
+  "Options_ShowEnemyName": "Show Enemy Name",
+  "Options_ShowNumericalWaterAndEnergy": "Show Hunger and Hydration Value",
+  "Options_ShowArmourStats": "Show Armour Stats"
+}

@@ -1,20 +1,42 @@
-# 逃离鸭科夫 Mod —— Numerical Needs 状态显示
+# Escape from Duckov Mod – Numerical Needs Display
 
-为游戏提供了更多信息显示。
-工坊链接：[创意工坊](https://steamcommunity.com/sharedfiles/filedetails/?id=3590948345)
+Provides additional in-game information displays for a clearer gameplay experience.
+ Steam Workshop link: [Workshop Page](https://steamcommunity.com/sharedfiles/filedetails/?id=3590948345)
 
-## 使用说明
+## Installation Guide
 
-- 首先安装 Harmony 这个前置 Mod - 可以直接在工坊搜索订阅。
-- 然后进入游戏，在 Mod 管理列表中，首先将 Harmony 移到列表的最上方，然后将此 Mod 移到只要是在 Harmony 的下方的位置
-- 先启用 Harmony，再启用此 Mod，然后重启游戏
+1. **Install the required dependency**: Harmony
+2. Open the game and go to the **Mod Manager**.
+3. Move **Harmony** to the top of your mod list. Place **Numerical Needs Display** directly below it.
+4. Enable **Harmony** first, then **Numerical Needs Display**.
+5. Restart the game to apply the changes.
 
-## 功能
-- 在饱腹和水分上方显示具体的数值
-- 在人物血条位置显示具体的血量
-- 在左下角血条位置上方显示当前头和甲的耐久状态
-- 设置普通敌人上方也显示名字，比如“拾荒者”
+## Features
 
-## 其他说明
+- Displays **exact hunger and thirst values** above their bars.
+- Shows **precise health numbers** above the character health bar.
+  - *This feature can be toggled off in the settings.*
+- Displays **helmet and armor durability** above the bottom-left health bar.
+- Optionally shows **enemy names** above ordinary enemies.
+  - *This feature can also be toggled off in the settings.*
 
-其中血条数值显示+敌人名字显示功能可以在`设置` - `[Mod]状态显示`处进行设置，无需重启游戏
+## Additional Information
+
+### Mod Settings
+
+Both **Health Number Display** and **Enemy Name Display** can be toggled under
+ `Settings → [Mod]Numerical Stats` — no restart required.
+
+### Localization
+
+This mod supports localization.
+ Language files are stored in the mod directory under the `Localization` folder in `.json` format.
+
+To add a new language, simply create a new file named `[YourSystemLanguageName].json` inside that folder.
+ For reference, check the language file names in
+ `Escape from Duckov\Duckov_Data\StreamingAssets\Localization`.
+ For example, to add German localization, name the file `German.json`.
+
+## Credits
+
+Icon resources from: https://game-icons.net/

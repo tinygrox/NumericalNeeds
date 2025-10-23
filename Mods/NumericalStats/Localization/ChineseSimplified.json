@@ -1,0 +1,8 @@
+{
+  "NumericalStats_ModOptionTitle": "[Mod]状态显示",
+  "NumericalStats_ArmourStatsDisplay_NoItem": "未装备",
+  "Options_ShowNumericalHealth": "显示血条数值",
+  "Options_ShowEnemyName": "显示敌人名字",
+  "Options_ShowNumericalWaterAndEnergy": "显示饱腹和水分具体数值",
+  "Options_ShowArmourStats": "显示头甲状态"
+}
