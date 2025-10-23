@@ -9,14 +9,14 @@ Provides additional in-game information displays for a clearer gameplay experien
 
 1. **Install the required dependency**: Harmony
 2. Open the game and go to the **Mod Manager**.
-3. Move **Harmony** to the top of your mod list. Place **Numerical Needs Display** directly below it.
-4. Enable **Harmony** first, then **Numerical Needs Display**.
+3. Move **Harmony** to the top of your mod list. Place **Numerical Stats** directly below it.
+4. Enable **Harmony** first, then **Numerical Stats**.
 5. Restart the game to apply the changes.
 
 ## Features
 
-- Displays **exact hunger and thirst values** above their bars.
-- Shows **precise health numbers** above the character health bar.
+- Displays **exact Hunger and Hydration values** above their bars.
+- Shows **health numbers** above the character health bar.
   - *This feature can be toggled off in the settings.*
 - Displays **helmet and armor durability** above the bottom-left health bar.
 - Optionally shows **enemy names** above ordinary enemies.
