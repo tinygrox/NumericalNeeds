@@ -9,8 +9,8 @@ namespace tinygrox.DuckovMods.NumericalStats.OptionsProviders
         {
             bool isEnabled = (index == 0);
             ModSettings.SetShowArmourStats(isEnabled);
-            int valueToSave = ModSettings.ShowArmourStats ? 1 : 0;
-            OptionsManager.Save(Key, valueToSave);
+            // int valueToSave = ModSettings.ShowArmourStats ? 1 : 0;
+            OptionsManager.Save(Key, ModSettings.ShowArmourStats);
         }
 
         public override string Key => "ShowArmourStats";

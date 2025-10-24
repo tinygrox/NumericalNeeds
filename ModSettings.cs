@@ -169,11 +169,16 @@ namespace tinygrox.DuckovMods.NumericalStats
                 // 开始拿 OptionsUIEntry_Dropdown
                 if (s_optionUIEntryObject.TryGetComponent<OptionsUIEntry_Dropdown>(out var myDropdownComp))
                 {
+                    // 创建一个获取 OptionsUIEntry_Dropdown.dropdown 的委托
                     var getObjectDelegate = ReflectionHelper.CreateFieldGetter<OptionsUIEntry_Dropdown, TMP_Dropdown>("dropdown");
                     TMP_Dropdown thisTMPDropdown = getObjectDelegate(myDropdownComp);
                     s_optionUIDropDown = Object.Instantiate(thisTMPDropdown.gameObject, null, true);
                     s_optionUIDropDown.SetActive(false);
                     s_optionUIDropDown.name = "NumericalStats_OptionEntry_Dropdown";
+                    // 那个 Image 先关掉
+                    var img = s_optionUIDropDown.transform.Find("Image");
+                    img.gameObject.SetActive(false);
+
                     Object.DontDestroyOnLoad(s_optionUIDropDown); // 用来复制的，你不能死
                     thisTMPDropdown.options.Clear();
                 }
@@ -214,6 +219,7 @@ namespace tinygrox.DuckovMods.NumericalStats
             return instance;
         }
 
+        // 虽然忘记用了
         public static GameObject GetOptionUiDropDown()
         {
             if (s_optionUIDropDown is null)

@@ -10,8 +10,8 @@ namespace tinygrox.DuckovMods.NumericalStats.OptionsProviders
         {
             bool isEnabled = (index == 0);
             ModSettings.SetShowShowEnemyName(isEnabled);
-            int valueToSave = ModSettings.ShowEnemyName ? 1 : 0;
-            OptionsManager.Save(Key, valueToSave);
+            // int valueToSave = ModSettings.ShowEnemyName ? 1 : 0;
+            OptionsManager.Save(Key, ModSettings.ShowEnemyName);
         }
 
         public override string Key => "ShowEnemyName";

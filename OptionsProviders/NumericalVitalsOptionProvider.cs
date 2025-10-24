@@ -9,8 +9,8 @@ namespace tinygrox.DuckovMods.NumericalStats.OptionsProviders
         {
             bool isEnabled = (index == 0);
             ModSettings.SetShowNumericalWaterAndEnergy(isEnabled);
-            int valueToSave = ModSettings.ShowNumericalWaterAndEnergy ? 1 : 0;
-            OptionsManager.Save(Key, valueToSave);
+            // int valueToSave = ModSettings.ShowNumericalWaterAndEnergy ? 1 : 0;
+            OptionsManager.Save(Key, ModSettings.ShowNumericalWaterAndEnergy);
         }
 
         public override string Key => "ShowNumericalWaterAndEnergy";

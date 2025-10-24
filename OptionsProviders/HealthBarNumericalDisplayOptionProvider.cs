@@ -10,8 +10,8 @@ namespace tinygrox.DuckovMods.NumericalStats.OptionsProviders
         {
             bool isEnabled = (index == 0);
             ModSettings.SetShowNumericalHealth(isEnabled);
-            int valueToSave = ModSettings.ShowNumericalHealth ? 1 : 0;
-            OptionsManager.Save(Key, valueToSave);
+            // int valueToSave = ModSettings.ShowNumericalHealth ? 1 : 0;
+            OptionsManager.Save(Key, ModSettings.ShowNumericalHealth);
         }
 
         public override string Key => "ShowNumericalHealth";

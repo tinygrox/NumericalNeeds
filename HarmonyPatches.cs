@@ -11,6 +11,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using VLB;
 
 namespace tinygrox.DuckovMods.NumericalStats
 {
@@ -84,6 +85,11 @@ namespace tinygrox.DuckovMods.NumericalStats
             GameObject tmpDropdownObj = optionRow?.transform.Find("Dropdown")?.gameObject;
             if(tmpDropdownObj is null) return;
 
+            var img = tmpDropdownObj.transform.Find("Image");
+            if (img)
+            {
+                img.gameObject.SetActive(false);
+            }
             if (tmpDropdownObj.TryGetComponent(out TMP_Dropdown dropdown))
             {
                 dropdown.options.Clear();

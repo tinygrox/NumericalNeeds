@@ -15,10 +15,10 @@ namespace tinygrox.DuckovMods.NumericalStats
 
         private void LoadSettings()
         {
-            ModSettings.SetShowNumericalHealth(OptionsManager.Load("ShowNumericalHealth", 1) == 1);
-            ModSettings.SetShowShowEnemyName(OptionsManager.Load("ShowEnemyName", 1) == 1);
-            ModSettings.SetShowNumericalWaterAndEnergy(OptionsManager.Load("ShowNumericalWaterAndEnergy", 1) == 1);
-            ModSettings.SetShowArmourStats(OptionsManager.Load("ShowArmourStats", 1) == 1);
+            ModSettings.SetShowNumericalHealth(OptionsManager.Load("ShowNumericalHealth", true));
+            ModSettings.SetShowShowEnemyName(OptionsManager.Load("ShowEnemyName", true));
+            ModSettings.SetShowNumericalWaterAndEnergy(OptionsManager.Load("ShowNumericalWaterAndEnergy", true));
+            ModSettings.SetShowArmourStats(OptionsManager.Load("ShowArmourStats", true));
         }
         private void Awake()
         {

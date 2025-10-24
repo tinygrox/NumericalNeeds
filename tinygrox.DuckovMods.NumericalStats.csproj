@@ -5,6 +5,7 @@
     <PropertyGroup>
         <DuckovPath>G:\Steam\steamapps\common\Escape from Duckov</DuckovPath>
         <LangVersion>8</LangVersion>
+        <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
     </PropertyGroup>
     <PropertyGroup>
         <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>

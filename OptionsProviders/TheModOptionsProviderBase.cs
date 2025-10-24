@@ -19,8 +19,8 @@ namespace tinygrox.DuckovMods.NumericalStats.OptionsProviders
         }
         private void RefreshOnLevelInited()
         {
-            int num = OptionsManager.Load(Key, 1);
-            Set(num == 1 ? 0 : 1);
+            bool value = OptionsManager.Load(Key, true);
+            Set(value ? 0 : 1);
         }
 
         public override string[] GetOptions()
@@ -30,8 +30,8 @@ namespace tinygrox.DuckovMods.NumericalStats.OptionsProviders
 
         public override string GetCurrentOption()
         {
-            int toggle = OptionsManager.Load(Key, 1);
-            return toggle == 1 ? OnKey.ToPlainText() : OffKey.ToPlainText();
+            bool toggle = OptionsManager.Load(Key, true);
+            return toggle ? OnKey.ToPlainText() : OffKey.ToPlainText();
         }
 
         public override void Set(int index)
