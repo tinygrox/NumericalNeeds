@@ -129,6 +129,8 @@ namespace tinygrox.DuckovMods.NumericalStats
                 return;
             }
             SlotSubscription();
+            OnHelmetSlotContentChanged(_characterMainControl.GetSlot(CharacterEquipmentController.helmatHash));
+            OnArmorSlotContentChanged(_characterMainControl.GetSlot(CharacterEquipmentController.armorHash));
             SetArmourStatus(_characterMainControl.GetHelmatItem(), _helmetImage, _helmetImageBackground, _helmetText);
             SetArmourStatus(_characterMainControl.GetArmorItem(), _armourImage, _armourImageBackground, _armourText);
         }
@@ -295,16 +297,6 @@ namespace tinygrox.DuckovMods.NumericalStats
             }
         }
 
-        // private void OnEnable()
-        // {
-        //     SlotSubscription();
-        // }
-        //
-        // private void OnDisable()
-        // {
-        //     SlotUnSubscription();
-        // }
-
         private void OnArmorSlotContentChanged(Slot s)
         {
             if(!_iconContainer) return;
@@ -333,7 +325,11 @@ namespace tinygrox.DuckovMods.NumericalStats
         private void OnArmorItemDurabilityChanged(Item item)
         {
             // 以防万一
-            if (item != _armorItem) return;
+            if (item != _armorItem)
+            {
+                Debug.Log($"[NumericalStats_ArmourStatsDisplay]{item?.DisplayName} != {_armorItem?.DisplayName}");
+                return;
+            }
 
             SetArmourStatus(item, _armourImage, _armourImageBackground, _armourText);
         }
@@ -361,7 +357,11 @@ namespace tinygrox.DuckovMods.NumericalStats
 
         private void OnHelmetItemDurabilityChanged(Item item)
         {
-            if(item != _helmetItem) return;
+            if (item != _helmetItem)
+            {
+                Debug.Log($"[NumericalStats_ArmourStatsDisplay]{item?.DisplayName} != {_helmetItem?.DisplayName}");
+                return;
+            }
 
             SetArmourStatus(item, _helmetImage, _helmetImageBackground, _helmetText);
         }
