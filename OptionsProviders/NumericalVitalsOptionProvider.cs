@@ -1,19 +1,18 @@
 using Duckov.Options;
 using SodaCraft.Localizations;
-using UnityEngine;
 
 namespace tinygrox.DuckovMods.NumericalStats.OptionsProviders
 {
-    public class ShowEnemyNameOptionProvider: TheModOptionsProviderBase
+    public class NumericalVitalsOptionProvider: TheModOptionsProviderBase
     {
         public override void Set(int index)
         {
             bool isEnabled = (index == 0);
-            ModSettings.SetShowShowEnemyName(isEnabled);
-            int valueToSave = ModSettings.ShowEnemyName ? 1 : 0;
+            ModSettings.SetShowNumericalWaterAndEnergy(isEnabled);
+            int valueToSave = ModSettings.ShowNumericalWaterAndEnergy ? 1 : 0;
             OptionsManager.Save(Key, valueToSave);
         }
 
-        public override string Key => "ShowEnemyName";
+        public override string Key => "ShowNumericalWaterAndEnergy";
     }
 }

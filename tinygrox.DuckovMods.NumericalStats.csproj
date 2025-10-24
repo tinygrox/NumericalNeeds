@@ -57,7 +57,8 @@
         <Compile Include="NumericalHealthDisplay.cs" />
         <Compile Include="OptionsProviders\ArmourStatsOptionProvider.cs" />
         <Compile Include="OptionsProviders\HealthBarNumericalDisplayOptionProvider.cs" />
-        <Compile Include="OptionsProviders\NumericalVitals.cs" />
+        <Compile Include="OptionsProviders\TheModOptionsProviderBase.cs" />
+        <Compile Include="OptionsProviders\NumericalVitalsOptionProvider.cs" />
         <Compile Include="OptionsProviders\ShowEnemyNameOptionProvider.cs" />
         <Compile Include="ReflectionHelper.cs" />
         <Compile Include="ShowWaterAndEnergy.cs" />

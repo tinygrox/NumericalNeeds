@@ -9,6 +9,8 @@ using UnityEngine.Events;
 
 namespace tinygrox.DuckovMods.NumericalStats
 {
+    // 这个是直接挂载在 gameObject 上面的脚本，直接用 MonoBehaviour 就好
+    // 原理就是通过 Harmony 给每个挂载了 Healthbar 的 gameObject 都挂载此脚本，然后单独自动更新
     public class NumericalHealthDisplay: MonoBehaviour
     {
         private TextMeshProUGUI _valueText;
@@ -36,7 +38,7 @@ namespace tinygrox.DuckovMods.NumericalStats
                 UpdateHealthText();
                 GetCharaterDisplayName();
                 ModSettings.OnShowNumericalHealthChanged += SetValueTextActiveSelfToValue;
-                ModSettings.OnShowEnemyName += SetNameTextActiveSelfToValue;
+                ModSettings.OnShowEnemyNameChanged += SetNameChangedTextActiveSelfToValue;
             }
         }
 
@@ -50,20 +52,20 @@ namespace tinygrox.DuckovMods.NumericalStats
                 Debug.Log("[NumericalHealthDisplay] No HealthBar component found on the GameObject.");
                 return;
             }
-
+            // 因为通过 Harmony 挂载的时间非常短，所以很多地方都没有值，得等
             StartCoroutine(WaitForBarInit());
             SetValueTextActiveSelfToValue(ModSettings.ShowNumericalHealth);
-            SetNameTextActiveSelfToValue(ModSettings.ShowEnemyName);
+            SetNameChangedTextActiveSelfToValue(ModSettings.ShowEnemyName);
         }
 
         private void OnDestroy()
         {
             ModSettings.OnShowNumericalHealthChanged -= SetValueTextActiveSelfToValue;
-            ModSettings.OnShowEnemyName -= SetNameTextActiveSelfToValue;
+            ModSettings.OnShowEnemyNameChanged -= SetNameChangedTextActiveSelfToValue;
 
             if (_currentTarget is null || _currentTarget.IsDead || _currentTarget.IsMainCharacterHealth)
             {
-                Debug.Log("[NumericalHealthDisplayOnDestroy] _currentTarget is null or _currentTarget.IsDead.");
+                Debug.Log($"[NumericalHealthDisplayOnDestroy] _currentTarget is null({_currentTarget is null}) or _currentTarget.IsDead({_currentTarget?.IsDead}) or _currentTarget.IsMainCharacterHealth({_currentTarget?.IsMainCharacterHealth}).");
                 return;
             }
 
@@ -116,7 +118,7 @@ namespace tinygrox.DuckovMods.NumericalStats
             _valueText.gameObject.SetActive(value);
         }
 
-        private void SetNameTextActiveSelfToValue(bool value)
+        private void SetNameChangedTextActiveSelfToValue(bool value)
         {
             if (_nameText is null || _currentTarget is null || _currentTarget.IsMainCharacterHealth || _currentTarget.IsDead || _currentTarget.TryGetCharacter().characterPreset.showName) return;
             _nameText.gameObject.SetActive(value);

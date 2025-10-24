@@ -35,6 +35,8 @@ namespace tinygrox.DuckovMods.NumericalStats
                 hud => hud.backgroundImage.transform,
                 "NumericalNeeds_Energy_Container"
             );
+
+            OnSettingsChanged(ModSettings.ShowNumericalWaterAndEnergy);
             _freshStatCoroutine = StartCoroutine(WaitAndFreshStat());
         }
 
@@ -50,9 +52,26 @@ namespace tinygrox.DuckovMods.NumericalStats
             }
         }
 
+        private void OnSettingsChanged(bool value)
+        {
+            SetTextMeshProUGUIActiveStatus(_waterCurrentText, value);
+            SetTextMeshProUGUIActiveStatus(_waterslashText, value);
+            SetTextMeshProUGUIActiveStatus(_waterMaxText, value);
+
+            SetTextMeshProUGUIActiveStatus(_energyCurrentText, value);
+            SetTextMeshProUGUIActiveStatus(_energyslashText, value);
+            SetTextMeshProUGUIActiveStatus(_energyMaxText, value);
+        }
+
+        private void SetTextMeshProUGUIActiveStatus(TextMeshProUGUI textMeshProUGUI, bool value)
+        {
+            if (!(textMeshProUGUI is null))
+                textMeshProUGUI.gameObject.SetActive(value);
+        }
+
         private void FreshStat()
         {
-            if (LevelManager.Instance?.MainCharacter is null) return;
+            if (LevelManager.Instance?.MainCharacter is null || !ModSettings.ShowNumericalWaterAndEnergy) return;
 
             _characterMainControl ??= LevelManager.Instance.MainCharacter;
 
@@ -76,12 +95,12 @@ namespace tinygrox.DuckovMods.NumericalStats
         protected override void OnAfterSetup()
         {
             LevelManager.OnLevelInitialized += AddTextToHUD;
-            ModSettings.ShowNumericalWaterAndEnergy = OptionsManager.Load("ShowNumericalWaterAndEnergy", 1) == 1;
         }
 
         protected override void OnBeforeDeactivate()
         {
             LevelManager.OnLevelInitialized -= AddTextToHUD;
+            ModSettings.OnShowNumericalWaterAndEnergyChanged -= OnSettingsChanged;
             if (_freshStatCoroutine != null)
             {
                 StopCoroutine(_freshStatCoroutine);
@@ -90,13 +109,9 @@ namespace tinygrox.DuckovMods.NumericalStats
 
         private void OnEnable()
         {
-            if (_waterCurrentText != null) _waterCurrentText.gameObject.SetActive(ModSettings.ShowNumericalWaterAndEnergy);
-            if (_waterMaxText != null) _waterMaxText.gameObject.SetActive(ModSettings.ShowNumericalWaterAndEnergy);
-            if (_energyCurrentText != null) _energyCurrentText.gameObject.SetActive(ModSettings.ShowNumericalWaterAndEnergy);
-            if (_energyMaxText != null) _energyMaxText.gameObject.SetActive(ModSettings.ShowNumericalWaterAndEnergy);
-            if (_waterslashText != null) _waterslashText.gameObject.SetActive(ModSettings.ShowNumericalWaterAndEnergy);
-            if (_energyslashText != null) _energyslashText.gameObject.SetActive(ModSettings.ShowNumericalWaterAndEnergy);
-
+            Debug.Log("ShowWaterAndEnergy_OnEnable");
+            OnSettingsChanged(ModSettings.ShowNumericalWaterAndEnergy);
+            ModSettings.OnShowNumericalWaterAndEnergyChanged += OnSettingsChanged;
             if (_freshStatCoroutine == null)
             {
                 _freshStatCoroutine = StartCoroutine(WaitAndFreshStat());
@@ -105,13 +120,9 @@ namespace tinygrox.DuckovMods.NumericalStats
 
         private void OnDisable()
         {
-            if (_waterCurrentText != null) _waterCurrentText.gameObject.SetActive(ModSettings.ShowNumericalWaterAndEnergy);
-            if (_waterMaxText != null) _waterMaxText.gameObject.SetActive(ModSettings.ShowNumericalWaterAndEnergy);
-            if (_energyCurrentText != null) _energyCurrentText.gameObject.SetActive(ModSettings.ShowNumericalWaterAndEnergy);
-            if (_energyMaxText != null) _energyMaxText.gameObject.SetActive(ModSettings.ShowNumericalWaterAndEnergy);
-            if (_waterslashText != null) _waterslashText.gameObject.SetActive(ModSettings.ShowNumericalWaterAndEnergy);
-            if (_energyslashText != null) _energyslashText.gameObject.SetActive(ModSettings.ShowNumericalWaterAndEnergy);
-
+            Debug.Log("ShowWaterAndEnergy_OnDisable");
+            OnSettingsChanged(ModSettings.ShowNumericalWaterAndEnergy);
+            ModSettings.OnShowNumericalWaterAndEnergyChanged -= OnSettingsChanged;
             if (_freshStatCoroutine != null)
             {
                 StopCoroutine(_freshStatCoroutine);
@@ -158,7 +169,7 @@ namespace tinygrox.DuckovMods.NumericalStats
             currentText.alignment = TextAlignmentOptions.Right;
             currentText.fontSizeMin = 20f;
             currentText.fontSizeMax = 32f;
-            currentText.gameObject.SetActive(true);
+            currentText.gameObject.SetActive(false);
             currentText.enableAutoSizing = true;
 
             TextMeshProUGUI slashText = Instantiate(GameplayDataSettings.UIStyle.TemplateTextUGUI, containerGo.transform);
@@ -168,7 +179,7 @@ namespace tinygrox.DuckovMods.NumericalStats
             slashText.fontSizeMin = 16f;
             slashText.fontSizeMax = 32f;
             slashText.GetComponent<RectTransform>().sizeDelta = new Vector2(10, 100); // 给斜杠一个固定窄宽度
-            slashText.gameObject.SetActive(true);
+            slashText.gameObject.SetActive(false);
             slashText.enableAutoSizing = true;
 
             TextMeshProUGUI maxText = Instantiate(GameplayDataSettings.UIStyle.TemplateTextUGUI, containerGo.transform);
@@ -176,7 +187,7 @@ namespace tinygrox.DuckovMods.NumericalStats
             maxText.alignment = TextAlignmentOptions.Left;
             maxText.fontSizeMin = 20f;
             maxText.fontSizeMax = 32f;
-            maxText.gameObject.SetActive(true);
+            maxText.gameObject.SetActive(false);
             maxText.enableAutoSizing = true;
 
             return (currentText, slashText, maxText);

@@ -70,9 +70,10 @@ namespace tinygrox.DuckovMods.NumericalStats
 
             ModSettings.SetTabButtonTabObjDelegate(myTabButton, myTabPanel);
             myTabPanel.transform.SetParent(myTabButton.transform.parent.parent.Find("ScrollView/Viewport/Content"), false);
+            CreateSimpleOption<NumericalVitalsOptionProvider>(myTabPanel.transform, "ShowNumericalWaterAndEnergy");
             CreateSimpleOption<HealthBarNumericalDisplayOptionProvider>(myTabPanel.transform, "ShowNumericalHealth");
-            // CreateSimpleOption<NumericalVitals>(myTabPanel.transform, "ShowNumericalWaterAndEnergy");
             CreateSimpleOption<ShowEnemyNameOptionProvider>(myTabPanel.transform, "ShowEnemyName");
+            CreateSimpleOption<ArmourStatsOptionProvider>(myTabPanel.transform, "ShowArmourStats");
 
             ___tabButtons.Add(myTabButton);
         }

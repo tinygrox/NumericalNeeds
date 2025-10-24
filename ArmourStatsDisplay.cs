@@ -4,18 +4,19 @@ using System.IO;
 using System.Reflection;
 using Duckov.Utilities;
 using ItemStatsSystem;
+using ItemStatsSystem.Items;
 using Newtonsoft.Json;
 using SodaCraft.Localizations;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using Path = System.IO.Path;
 
 namespace tinygrox.DuckovMods.NumericalStats
 {
     public class ArmourStatsDisplay: Duckov.Modding.ModBehaviour
     {
         private CharacterMainControl _characterMainControl;
+
         private Image _armourImage;
         private Image _armourImageBackground;
         private Image _helmetImage;
@@ -28,6 +29,12 @@ namespace tinygrox.DuckovMods.NumericalStats
         private readonly Color _midDurabilityColor = new Color(0.88f, 0.69f, 0.17f); // "#E1B12C"
         private readonly Color _highDurabilityColor = new Color(0.8f, 0.8f, 0.8f); // "#CCCCCC"
 
+        public Slot armorSlot;
+        public Slot helmetSlot;
+
+        private Item _armorItem;
+        private Item _helmetItem;
+
         private static string GetLocalizationFilePath(string langName)
         {
             string assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -38,7 +45,7 @@ namespace tinygrox.DuckovMods.NumericalStats
         private void LoadLanguageFile(SystemLanguage language)
         {
             string langName = language.ToString();
-            Debug.Log($"Loading language file for: {langName}");
+            Debug.Log($"[NumericalStats]Loading language file for: {langName}");
             string langFilePath = GetLocalizationFilePath(langName);
             if (!File.Exists(langFilePath))
             {
@@ -59,6 +66,14 @@ namespace tinygrox.DuckovMods.NumericalStats
         private Color GetColorFromHex(string hex)
         {
             return ColorUtility.TryParseHtmlString(hex, out Color color) ? color : Color.white;
+        }
+
+        private void OnSettingsChanged(bool value)
+        {
+            if (_iconContainer)
+            {
+                _iconContainer.SetActive(value);
+            }
         }
 
         private void Awake()
@@ -100,6 +115,22 @@ namespace tinygrox.DuckovMods.NumericalStats
 
             CreateArmourUnit("Helmet", out _helmetImage, out _helmetImageBackground, out _helmetText);
             CreateArmourUnit("Armour", out _armourImage, out _armourImageBackground, out _armourText);
+
+            OnSettingsChanged(ModSettings.ShowArmourStats);
+        }
+
+        private void SetCharacterMainControl()
+        {
+            Debug.Log("[NumericalStats]ArmourStatsDisplay SetCharacterMainControl");
+            _characterMainControl = LevelManager.Instance?.MainCharacter;
+            if (_characterMainControl is null)
+            {
+                Debug.LogError("[NumericalStats] Character main control is null");
+                return;
+            }
+            SlotSubscription();
+            SetArmourStatus(_characterMainControl.GetHelmatItem(), _helmetImage, _helmetImageBackground, _helmetText);
+            SetArmourStatus(_characterMainControl.GetArmorItem(), _armourImage, _armourImageBackground, _armourText);
         }
 
         private void CreateArmourUnit(string type, out Image image, out Image bg, out TextMeshProUGUI text)
@@ -186,10 +217,7 @@ namespace tinygrox.DuckovMods.NumericalStats
         {
             if(img is null || text is null || bg is null) return;
 
-            bool noItem = item is null;
-
-            // bg.gameObject.SetActive(!noItem);
-            if (noItem)
+            if (item is null)
             {
                 img.color = _lowDurabilityColor;
                 img.fillAmount = 1;
@@ -197,9 +225,13 @@ namespace tinygrox.DuckovMods.NumericalStats
                 return;
             }
 
-            float durability = item.Durability;
-            float maxDurability = item.MaxDurabilityWithLoss;
-            text.text = $"{Mathf.RoundToInt(durability)}/{Mathf.RoundToInt(maxDurability)}";
+            if (item != _characterMainControl.GetHelmatItem() && item != _characterMainControl.GetArmorItem()) return;
+
+            float durability = Mathf.RoundToInt(item.Durability);
+            float maxDurability = Mathf.RoundToInt(item.MaxDurabilityWithLoss);
+
+            text.SetText("{0}/{1}",durability, maxDurability);
+
             if (maxDurability <= 0)
             {
                 img.color = _lowDurabilityColor;
@@ -207,41 +239,131 @@ namespace tinygrox.DuckovMods.NumericalStats
                 return;
             }
             float durabilityPercent = durability / maxDurability;
-
             img.fillAmount = durabilityPercent - item.DurabilityLoss;
             bg.fillAmount = item.DurabilityLoss;
 
-            if (durabilityPercent >= 0.8f)
+            // 来点平滑变色
+            Color finalcolor;
+            if (durabilityPercent < 0.4f)
             {
-                img.color = _highDurabilityColor;
-                text.color = _highDurabilityColor;
-            }
-            else if(durabilityPercent >= 0.4f)
-            {
-                img.color = _midDurabilityColor;
-                text.color = _midDurabilityColor;
+                float t = durabilityPercent / 0.4f;
+                finalcolor = Color.Lerp(_lowDurabilityColor, _midDurabilityColor, t);
+                // img.color = _highDurabilityColor;
+                // text.color = _highDurabilityColor;
             }
             else
             {
-                img.color = _lowDurabilityColor;
-                text.color = _lowDurabilityColor;
+                float t = (durabilityPercent - 0.4f) / 0.6f;
+                finalcolor = Color.Lerp(_midDurabilityColor, _highDurabilityColor, t);
+            }
+
+            img.color = finalcolor;
+            text.color = finalcolor;
+        }
+
+        private void SlotSubscription()
+        {
+            armorSlot = _characterMainControl.GetSlot(CharacterEquipmentController.armorHash);
+            if (armorSlot != null)
+            {
+                armorSlot.onSlotContentChanged += OnArmorSlotContentChanged;
+            }
+            else
+            {
+                Debug.LogError($"{nameof(SlotSubscription)} could not find an armor slot.");
+            }
+            helmetSlot = _characterMainControl.GetSlot(CharacterEquipmentController.helmatHash);
+            if (helmetSlot != null)
+            {
+                helmetSlot.onSlotContentChanged += OnHelmetSlotContentChanged;
+            }
+            else
+            {
+                Debug.LogError($"{nameof(SlotSubscription)} could not find an helmet slot.");
+            }
+        }
+        private void SlotUnSubscription()
+        {
+            if (armorSlot != null)
+            {
+                armorSlot.onSlotContentChanged -= OnArmorSlotContentChanged;
+            }
+
+            if (helmetSlot != null)
+            {
+                helmetSlot.onSlotContentChanged -= OnHelmetSlotContentChanged;
             }
         }
 
-        private void Update()
+        // private void OnEnable()
+        // {
+        //     SlotSubscription();
+        // }
+        //
+        // private void OnDisable()
+        // {
+        //     SlotUnSubscription();
+        // }
+
+        private void OnArmorSlotContentChanged(Slot s)
         {
-            if(_iconContainer is null) return;
+            if(!_iconContainer) return;
 
-            if (LevelManager.Instance?.MainCharacter is null) return;
+            var curItem = _characterMainControl?.GetArmorItem();
+            if (_armorItem == curItem)
+            {
+                SetArmourStatus(_armorItem, _armourImage, _armourImageBackground, _armourText);
+                return;
+            }
 
-            _characterMainControl = LevelManager.Instance.MainCharacter;
+            if (_armorItem)
+            {
+                _armorItem.onDurabilityChanged -= OnArmorItemDurabilityChanged;
+            }
 
-            if (_characterMainControl is null) return;
+            _armorItem = curItem;
 
-            var armorItem = _characterMainControl.GetArmorItem();
-            var helmetItem = _characterMainControl.GetHelmatItem();
-            SetArmourStatus(helmetItem, _helmetImage, _helmetImageBackground, _helmetText);
-            SetArmourStatus(armorItem, _armourImage, _armourImageBackground, _armourText);
+            if (_armorItem)
+            {
+                _armorItem.onDurabilityChanged += OnArmorItemDurabilityChanged;
+            }
+            SetArmourStatus(_armorItem, _armourImage, _armourImageBackground, _armourText);
+        }
+
+        private void OnArmorItemDurabilityChanged(Item item)
+        {
+            // 以防万一
+            if (item != _armorItem) return;
+
+            SetArmourStatus(item, _armourImage, _armourImageBackground, _armourText);
+        }
+        private void OnHelmetSlotContentChanged(Slot slot)
+        {
+            if (!_iconContainer) return;
+            var curItem = slot.Content;
+            if (_helmetItem == curItem)
+            {
+                SetArmourStatus(_helmetItem, _helmetImage, _helmetImageBackground, _helmetText);
+                return;
+            }
+
+            if (_helmetItem)
+            {
+                _helmetItem.onDurabilityChanged -= OnHelmetItemDurabilityChanged;
+            }
+            _helmetItem = curItem;
+            if (_helmetItem)
+            {
+                _helmetItem.onDurabilityChanged += OnHelmetItemDurabilityChanged;
+            }
+            SetArmourStatus(_helmetItem, _helmetImage, _helmetImageBackground, _helmetText);
+        }
+
+        private void OnHelmetItemDurabilityChanged(Item item)
+        {
+            if(item != _helmetItem) return;
+
+            SetArmourStatus(item, _helmetImage, _helmetImageBackground, _helmetText);
         }
 
         private void OnGameLanguageChanged(SystemLanguage newLanguage)
@@ -249,19 +371,30 @@ namespace tinygrox.DuckovMods.NumericalStats
             LoadLanguageFile(newLanguage);
         }
 
+        private void OnDestroy()
+        {
+            OnBeforeDeactivate();
+        }
+
         protected override void OnAfterSetup()
         {
-            LevelManager.OnLevelInitialized += AddIconToHUD;
+            LevelManager.OnLevelBeginInitializing += AddIconToHUD;
+            LevelManager.OnLevelInitialized += SetCharacterMainControl;
             LocalizationManager.OnSetLanguage += OnGameLanguageChanged;
+            ModSettings.OnShowArmourStatsChanged += OnSettingsChanged;
         }
 
         protected override void OnBeforeDeactivate()
         {
-            LevelManager.OnLevelInitialized -= AddIconToHUD;
+            LevelManager.OnLevelBeginInitializing -= AddIconToHUD;
+            LevelManager.OnLevelInitialized -= SetCharacterMainControl;
             LocalizationManager.OnSetLanguage -= OnGameLanguageChanged;
+            ModSettings.OnShowArmourStatsChanged -= OnSettingsChanged;
+            SlotUnSubscription();
             if (!(_iconContainer is null))
             {
                 Destroy(_iconContainer);
+                // _iconContainer.SetActive(false);
                 _iconContainer = null;
             }
         }

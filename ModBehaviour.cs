@@ -17,15 +17,16 @@ namespace tinygrox.DuckovMods.NumericalStats
         {
             ModSettings.SetShowNumericalHealth(OptionsManager.Load("ShowNumericalHealth", 1) == 1);
             ModSettings.SetShowShowEnemyName(OptionsManager.Load("ShowEnemyName", 1) == 1);
+            ModSettings.SetShowNumericalWaterAndEnergy(OptionsManager.Load("ShowNumericalWaterAndEnergy", 1) == 1);
+            ModSettings.SetShowArmourStats(OptionsManager.Load("ShowArmourStats", 1) == 1);
         }
         private void Awake()
         {
-            _harmony = new Harmony("tinygrox.DuckovMods.NumericalStats");
             Debug.Log("[NumericalStats]ModBehaviour Awake");
+            _harmony = new Harmony("tinygrox.DuckovMods.NumericalStats");
+            LoadSettings();
             s_mods.Add(gameObject.AddComponent<ShowWaterAndEnergy>());
             s_mods.Add(gameObject.AddComponent<ArmourStatsDisplay>());
-            LoadSettings();
-            // ModSettings.ShowNumericalWaterAndEnergy = OptionsManager.Load("ShowNumericalHealth", 1) == 1;
         }
 
         private void LateUpdate()

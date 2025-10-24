@@ -23,22 +23,35 @@ namespace tinygrox.DuckovMods.NumericalStats
         public static bool ShowEnemyName;
 
         public static event Action<bool> OnShowNumericalHealthChanged;
-        public static event Action<bool> OnShowEnemyName;
+        public static event Action<bool> OnShowEnemyNameChanged;
+        public static event Action<bool> OnShowNumericalWaterAndEnergyChanged;
+        public static event Action<bool> OnShowArmourStatsChanged;
+
+        private static void SetBool(ref bool field, bool value, Action<bool> invoker)
+        {
+            if (field == value) return;
+            field = value;
+            invoker?.Invoke(value);
+        }
 
         public static void SetShowNumericalHealth(bool value)
         {
-            if (ShowNumericalHealth == value) return;
-
-            ShowNumericalHealth = value;
-            OnShowNumericalHealthChanged?.Invoke(value);
+            SetBool(ref ShowNumericalHealth, value, v => OnShowNumericalHealthChanged?.Invoke(v));
         }
 
         public static void SetShowShowEnemyName(bool value)
         {
-            if (ShowEnemyName == value) return;
+            SetBool(ref ShowEnemyName, value, v => OnShowEnemyNameChanged?.Invoke(v));
+        }
 
-            ShowEnemyName = value;
-            OnShowEnemyName?.Invoke(value);
+        public static void SetShowNumericalWaterAndEnergy(bool value)
+        {
+            SetBool(ref ShowNumericalWaterAndEnergy, value, v => OnShowNumericalWaterAndEnergyChanged?.Invoke(v));
+        }
+
+        public static void SetShowArmourStats(bool value)
+        {
+            SetBool(ref  ShowArmourStats, value, v => OnShowArmourStatsChanged?.Invoke(v));
         }
 
         // 这个缓存后就可以一直 Instantiate
@@ -116,6 +129,7 @@ namespace tinygrox.DuckovMods.NumericalStats
 
             var labelObject = s_tabButtonPrefab.transform.Find("Label")?.gameObject;
             if (labelObject is null) return;
+            // 哈哈，这里直接设置 Mod 按钮的标题
             if(labelObject.TryGetComponent(out TextLocalizor t))
             {
                 t.Key = "NumericalStats_ModOptionTitle";
@@ -160,7 +174,7 @@ namespace tinygrox.DuckovMods.NumericalStats
                     s_optionUIDropDown = Object.Instantiate(thisTMPDropdown.gameObject, null, true);
                     s_optionUIDropDown.SetActive(false);
                     s_optionUIDropDown.name = "NumericalStats_OptionEntry_Dropdown";
-                    Object.DontDestroyOnLoad(s_optionUIDropDown);
+                    Object.DontDestroyOnLoad(s_optionUIDropDown); // 用来复制的，你不能死
                     thisTMPDropdown.options.Clear();
                 }
 
