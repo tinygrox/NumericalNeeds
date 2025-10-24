@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using Duckov.Options;
 using Duckov.Utilities;
 using TMPro;
@@ -18,14 +20,13 @@ namespace tinygrox.DuckovMods.NumericalStats
         private TextMeshProUGUI _waterslashText;
         private TextMeshProUGUI _energyslashText;
 
-        private Coroutine _freshStatCoroutine;
+        private CancellationTokenSource _cts;
 
         private void AddTextToHUD()
         {
-            if (_freshStatCoroutine != null)
-            {
-                StopCoroutine(_freshStatCoroutine);
-            }
+            _cts?.Cancel();
+            _cts?.Dispose();
+            _cts = new CancellationTokenSource();
 
             (_waterCurrentText, _waterslashText, _waterMaxText) = SetupStatDisplay<WaterHUD>(
                 hud => hud.backgroundImage.transform,
@@ -37,18 +38,24 @@ namespace tinygrox.DuckovMods.NumericalStats
             );
 
             OnSettingsChanged(ModSettings.ShowNumericalWaterAndEnergy);
-            _freshStatCoroutine = StartCoroutine(WaitAndFreshStat());
+            FreshStatLoopAsync(_cts.Token).Forget();
         }
 
-        private IEnumerator WaitAndFreshStat()
+        private async UniTaskVoid FreshStatLoopAsync(CancellationToken token)
         {
-            yield return new WaitUntil(()=>!(LevelManager.Instance?.MainCharacter is null));
-
-            _characterMainControl = LevelManager.Instance.MainCharacter;
-            while (true)
+            try
             {
-                FreshStat();
-                yield return new WaitForSeconds(1f);
+                await UniTask.WaitUntil(() => LevelManager.Instance?.MainCharacter != null, cancellationToken: token);
+                _characterMainControl = LevelManager.Instance.MainCharacter;
+
+                while (!token.IsCancellationRequested)
+                {
+                    FreshStat();
+                    await UniTask.Delay(TimeSpan.FromSeconds(1), cancellationToken: token);
+                }
+            }
+            catch (OperationCanceledException)
+            {
             }
         }
 
@@ -65,7 +72,7 @@ namespace tinygrox.DuckovMods.NumericalStats
 
         private void SetTextMeshProUGUIActiveStatus(TextMeshProUGUI textMeshProUGUI, bool value)
         {
-            if (!(textMeshProUGUI is null))
+            if (textMeshProUGUI)
                 textMeshProUGUI.gameObject.SetActive(value);
         }
 
@@ -79,55 +86,34 @@ namespace tinygrox.DuckovMods.NumericalStats
             {
                 float currentWater = _characterMainControl.CurrentWater;
                 float maxWater = _characterMainControl.MaxWater;
-                _waterCurrentText.text = $"{currentWater:F1}";
-                _waterMaxText.text = $"{maxWater:F0}";
+                _waterCurrentText.SetText(Mathf.Approximately(currentWater, maxWater) ? "{0:0}" : "{0:1}", currentWater);
+                _waterMaxText.SetText("{0:0}",maxWater);
             }
 
             if (!(_energyCurrentText is null) && !(_energyMaxText is null))
             {
                 float currentEnergy = _characterMainControl.CurrentEnergy;
                 float maxEnergy = _characterMainControl.MaxEnergy;
-                _energyCurrentText.text = $"{currentEnergy:F1}";
-                _energyMaxText.text = $"{maxEnergy:F0}";
-            }
-        }
-
-        protected override void OnAfterSetup()
-        {
-            LevelManager.OnLevelInitialized += AddTextToHUD;
-        }
-
-        protected override void OnBeforeDeactivate()
-        {
-            LevelManager.OnLevelInitialized -= AddTextToHUD;
-            ModSettings.OnShowNumericalWaterAndEnergyChanged -= OnSettingsChanged;
-            if (_freshStatCoroutine != null)
-            {
-                StopCoroutine(_freshStatCoroutine);
+                _energyCurrentText.SetText(Mathf.Approximately(currentEnergy, maxEnergy) ? "{0:0}" : "{0:1}", currentEnergy);
+                _energyMaxText.SetText("{0:0}", maxEnergy);
             }
         }
 
         private void OnEnable()
         {
-            Debug.Log("ShowWaterAndEnergy_OnEnable");
-            OnSettingsChanged(ModSettings.ShowNumericalWaterAndEnergy);
+            LevelManager.OnLevelInitialized += AddTextToHUD;
             ModSettings.OnShowNumericalWaterAndEnergyChanged += OnSettingsChanged;
-            if (_freshStatCoroutine == null)
-            {
-                _freshStatCoroutine = StartCoroutine(WaitAndFreshStat());
-            }
+            OnSettingsChanged(ModSettings.ShowNumericalWaterAndEnergy);
         }
 
         private void OnDisable()
         {
-            Debug.Log("ShowWaterAndEnergy_OnDisable");
-            OnSettingsChanged(ModSettings.ShowNumericalWaterAndEnergy);
+            LevelManager.OnLevelInitialized -= AddTextToHUD;
             ModSettings.OnShowNumericalWaterAndEnergyChanged -= OnSettingsChanged;
-            if (_freshStatCoroutine != null)
-            {
-                StopCoroutine(_freshStatCoroutine);
-                _freshStatCoroutine = null;
-            }
+            // OnSettingsChanged(ModSettings.ShowNumericalWaterAndEnergy);
+            _cts?.Cancel();
+            _cts?.Dispose();
+            _cts = null;
         }
 
         private (TextMeshProUGUI, TextMeshProUGUI, TextMeshProUGUI) SetupStatDisplay<T>(Func<T, Transform> getTextParentFromHUD, string containerName) where T : MonoBehaviour
@@ -169,17 +155,15 @@ namespace tinygrox.DuckovMods.NumericalStats
             currentText.alignment = TextAlignmentOptions.Right;
             currentText.fontSizeMin = 20f;
             currentText.fontSizeMax = 32f;
-            currentText.gameObject.SetActive(false);
             currentText.enableAutoSizing = true;
 
             TextMeshProUGUI slashText = Instantiate(GameplayDataSettings.UIStyle.TemplateTextUGUI, containerGo.transform);
             slashText.gameObject.name = "SlashText";
             slashText.alignment = TextAlignmentOptions.Center;
-            slashText.text = "/";
+            slashText.SetText("/");
             slashText.fontSizeMin = 16f;
             slashText.fontSizeMax = 32f;
             slashText.GetComponent<RectTransform>().sizeDelta = new Vector2(10, 100); // 给斜杠一个固定窄宽度
-            slashText.gameObject.SetActive(false);
             slashText.enableAutoSizing = true;
 
             TextMeshProUGUI maxText = Instantiate(GameplayDataSettings.UIStyle.TemplateTextUGUI, containerGo.transform);
@@ -187,7 +171,6 @@ namespace tinygrox.DuckovMods.NumericalStats
             maxText.alignment = TextAlignmentOptions.Left;
             maxText.fontSizeMin = 20f;
             maxText.fontSizeMax = 32f;
-            maxText.gameObject.SetActive(false);
             maxText.enableAutoSizing = true;
 
             return (currentText, slashText, maxText);

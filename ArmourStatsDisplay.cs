@@ -13,6 +13,11 @@ using UnityEngine.UI;
 
 namespace tinygrox.DuckovMods.NumericalStats
 {
+    // 整个数值的更新纯事件驱动，但是我写的好像有点乱
+    // 逻辑很 TM 简单，就是只在头和甲这个两个物品的耐久改变时更新显示
+    // 所以获取到当前装备的头和甲的 Item 订阅事件即可
+    // 但是玩家会换装备，所以当前装备的头和甲会变化，所以又要在玩家更换装备时更新旧物品和新物品的订阅事件
+    // 所以还需要在头、甲的装备槽 Slot 处订阅我们更新订阅的事件
     public class ArmourStatsDisplay: Duckov.Modding.ModBehaviour
     {
         private CharacterMainControl _characterMainControl;
@@ -250,8 +255,6 @@ namespace tinygrox.DuckovMods.NumericalStats
             {
                 float t = durabilityPercent / 0.4f;
                 finalcolor = Color.Lerp(_lowDurabilityColor, _midDurabilityColor, t);
-                // img.color = _highDurabilityColor;
-                // text.color = _highDurabilityColor;
             }
             else
             {

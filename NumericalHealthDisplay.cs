@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using Duckov.Options;
 using Duckov.UI;
 using Duckov.Utilities;
@@ -19,32 +21,58 @@ namespace tinygrox.DuckovMods.NumericalStats
         private CharacterRandomPreset _characterRandomPreset;
         private Health _currentTarget;
 
+        private CancellationTokenSource _cts;
+
         private void Awake()
         {
             SetupValueText();
         }
+
         // 因为是在运行时通过 Harmony patch 添加的，所以不能保证所需的内容已经全部加载完毕
-        private IEnumerator WaitForBarInit()
+        private async UniTaskVoid WaiteForbarInitAsync(CancellationToken token)
         {
-            while (_healthBar.target is null)
+            try
             {
-                yield return null;
+                await UniTask.WaitUntil(() => _healthBar.target != null, cancellationToken: token);
             }
-            // Debug.Log($"[NumericalHealthDisplay] Finaly not null!");
+            catch (OperationCanceledException)
+            {
+                Debug.Log("[NumericalHealthDisplay] No waiting for the target.");
+                return;
+            }
+            catch (TimeoutException)
+            {
+                Debug.Log("[NumericalHealthDisplay] Timeout for the target.");
+                return;
+            }
+
+            if (token.IsCancellationRequested) return;
+
             _currentTarget = _healthBar.target;
+
+            if (_currentTarget is null)
+            {
+                return;
+            }
+
             if (!_currentTarget.IsDead)
             {
+                _currentTarget.OnHealthChange.RemoveListener(UpdateHealthText);
                 _currentTarget.OnHealthChange.AddListener(UpdateHealthText);
+
                 UpdateHealthText();
+
+                // TrySetNameText();
                 GetCharaterDisplayName();
+                ModSettings.OnShowNumericalHealthChanged -= SetValueTextActiveSelfToValue;
                 ModSettings.OnShowNumericalHealthChanged += SetValueTextActiveSelfToValue;
+
+                ModSettings.OnShowEnemyNameChanged -= SetNameChangedTextActiveSelfToValue;
                 ModSettings.OnShowEnemyNameChanged += SetNameChangedTextActiveSelfToValue;
             }
         }
-
         private void OnEnable()
         {
-
             _healthBar ??= GetComponent<HealthBar>();
             if (_healthBar is null)
             {
@@ -52,14 +80,18 @@ namespace tinygrox.DuckovMods.NumericalStats
                 Debug.Log("[NumericalHealthDisplay] No HealthBar component found on the GameObject.");
                 return;
             }
-            // 因为通过 Harmony 挂载的时间非常短，所以很多地方都没有值，得等
-            StartCoroutine(WaitForBarInit());
+
+            _cts = new CancellationTokenSource();
+            WaiteForbarInitAsync(_cts.Token).Forget();
             SetValueTextActiveSelfToValue(ModSettings.ShowNumericalHealth);
             SetNameChangedTextActiveSelfToValue(ModSettings.ShowEnemyName);
         }
 
-        private void OnDestroy()
+        private void OnDisable()
         {
+            _cts?.Cancel();
+            _cts?.Dispose();
+            _cts = null;
             ModSettings.OnShowNumericalHealthChanged -= SetValueTextActiveSelfToValue;
             ModSettings.OnShowEnemyNameChanged -= SetNameChangedTextActiveSelfToValue;
 
@@ -114,8 +146,7 @@ namespace tinygrox.DuckovMods.NumericalStats
 
         private void SetValueTextActiveSelfToValue(bool value)
         {
-            if (_valueText is null) return;
-            _valueText.gameObject.SetActive(value);
+            _valueText?.gameObject.SetActive(value);
         }
 
         private void SetNameChangedTextActiveSelfToValue(bool value)
@@ -125,7 +156,7 @@ namespace tinygrox.DuckovMods.NumericalStats
         }
         private void UpdateHealthText()
         {
-            if (!_currentTarget)
+            if (_currentTarget is null)
             {
                 return;
             }

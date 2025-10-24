@@ -59,7 +59,7 @@ namespace tinygrox.DuckovMods.NumericalStats
             var title = myTabButton.GetComponentInChildren<TextMeshProUGUI>();
             if (title)
             {
-                title.text = LocalizationManager.GetPlainText("NumericalStats_ModOptionTitle");
+                title.SetText(LocalizationManager.GetPlainText("NumericalStats_ModOptionTitle"));
             }
 
             var myTabPanel = ModSettings.GetTabButtonTabObjDelegate(myTabButton);
