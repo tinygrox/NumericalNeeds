@@ -235,18 +235,18 @@ namespace tinygrox.DuckovMods.NumericalStats
             if (item != _characterMainControl.GetHelmatItem() && item != _characterMainControl.GetArmorItem()) return;
 
             float durability = Mathf.RoundToInt(item.Durability);
-            float maxDurability = Mathf.RoundToInt(item.MaxDurabilityWithLoss);
+            float maxDurabilityWithLoss = Mathf.RoundToInt(item.MaxDurabilityWithLoss);
 
-            text.SetText("{0}/{1}",durability, maxDurability);
+            text.SetText("{0}/{1}",durability, maxDurabilityWithLoss);
 
-            if (maxDurability <= 0)
+            if (maxDurabilityWithLoss <= 0)
             {
                 img.color = _lowDurabilityColor;
                 text.color = _lowDurabilityColor;
                 return;
             }
-            float durabilityPercent = durability / maxDurability;
-            img.fillAmount = durabilityPercent - item.DurabilityLoss;
+            float durabilityPercent = durability / maxDurabilityWithLoss;
+            img.fillAmount = durabilityPercent * (1 - item.DurabilityLoss);
             bg.fillAmount = item.DurabilityLoss;
 
             // 来点平滑变色

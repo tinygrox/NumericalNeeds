@@ -29,14 +29,6 @@ namespace tinygrox.DuckovMods.NumericalStats
             s_mods.Add(gameObject.AddComponent<ArmourStatsDisplay>());
         }
 
-        // private void LateUpdate()
-        // {
-        //     if (gameObject.TryGetComponent(out ShowWaterAndEnergy component))
-        //     {
-        //         component.enabled = ModSettings.ShowNumericalWaterAndEnergy;
-        //     }
-        // }
-
         protected override void OnAfterSetup()
         {
             _harmony.Patch(
