@@ -4,5 +4,8 @@
   "Options_ShowNumericalHealth": "顯示血條數值",
   "Options_ShowEnemyName": "顯示敵人名字",
   "Options_ShowNumericalWaterAndEnergy": "顯示飽腹水分數值",
-  "Options_ShowArmourStats": "顯示頭甲狀態"
+  "Options_ShowArmourStats": "顯示頭甲狀態",
+  "Options_ShowHealthBarForObjects": "物體受擊顯示血條",
+  "Options_MustShowHealthBar": "非友軍單位顯示血條(如風暴生物)",
+  "Options_NumericalStats_EditUI": "長按[停止動作](默認 X) 可拖拽 UI 控件"
 }

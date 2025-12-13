@@ -4,5 +4,8 @@
   "Options_ShowNumericalHealth": "Health Bar Numerical",
   "Options_ShowEnemyName": "Show Enemy Name",
   "Options_ShowNumericalWaterAndEnergy": "Show Hunger and Hydration Value",
-  "Options_ShowArmourStats": "Show Armour Stats"
+  "Options_ShowArmourStats": "Show Armour Stats",
+  "Options_ShowHealthBarForObjects": "Show Health Bar for Objects on Hit",
+  "Options_MustShowHealthBar": "Show Health Bars for Non-friendlies",
+  "Options_NumericalStats_EditUI": "Hold [Stop Action](default X) drag UI"
 }

@@ -7,6 +7,7 @@ using ItemStatsSystem;
 using ItemStatsSystem.Items;
 using Newtonsoft.Json;
 using SodaCraft.Localizations;
+using tinygrox.DuckovMods.NumericalStats.UIElements;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -39,6 +40,9 @@ namespace tinygrox.DuckovMods.NumericalStats
 
         private Item _armorItem;
         private Item _helmetItem;
+
+        private DraggableUIElement _draggableUIElement;
+
 
         private static string GetLocalizationFilePath(string langName)
         {
@@ -91,15 +95,15 @@ namespace tinygrox.DuckovMods.NumericalStats
         {
             if (_iconContainer != null) return;
 
-            GameObject hudObj = GameObject.Find("HP");
+            GameObject hudObj = LevelManager.Instance?.transform.Find("HUDCanvas")?.gameObject; // GameObject.Find("HP");
 
             if (hudObj is null) return;
 
             _iconContainer = new GameObject("ArmourStatsDisplay_Container");
             _iconContainer.transform.SetParent(hudObj.transform, false);
             var contanierRect = _iconContainer.AddComponent<RectTransform>();
-            contanierRect.anchorMin = new Vector2(0, 1);
-            contanierRect.anchorMax = new Vector2(1, 1);
+            contanierRect.anchorMin = Vector2.zero; // new Vector2(0, 1);
+            contanierRect.anchorMax = Vector2.one; // new Vector2(1, 1);
             contanierRect.pivot = new Vector2(0.5f, 0);
             // contanierRect.anchoredPosition = new Vector2(0, 18);
 
@@ -117,6 +121,11 @@ namespace tinygrox.DuckovMods.NumericalStats
             var contentSizeFitter = _iconContainer.AddComponent<ContentSizeFitter>();
             contentSizeFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
             contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            _draggableUIElement = _iconContainer.AddComponent<DraggableUIElement>();
+            // 订阅保存位置的事件
+            _draggableUIElement.OnSavePositionRequested += ModSettings.SetArmourStatsDisplayPosition;
+            _draggableUIElement.Initialize(ModSettings.ArmourStatsDisplayPosition);
 
             CreateArmourUnit("Helmet", out _helmetImage, out _helmetImageBackground, out _helmetText);
             CreateArmourUnit("Armour", out _armourImage, out _armourImageBackground, out _armourText);
@@ -372,6 +381,7 @@ namespace tinygrox.DuckovMods.NumericalStats
         private void OnGameLanguageChanged(SystemLanguage newLanguage)
         {
             LoadLanguageFile(newLanguage);
+
         }
 
         private void OnDestroy()

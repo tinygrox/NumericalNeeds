@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using System.Linq;
+using System.Text;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Duckov.Options;
@@ -8,6 +10,7 @@ using Duckov.Utilities;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
+using Object = System.Object;
 
 namespace tinygrox.DuckovMods.NumericalStats
 {
@@ -23,6 +26,8 @@ namespace tinygrox.DuckovMods.NumericalStats
 
         private CancellationTokenSource _cts;
 
+        private StringBuilder _stringBuilder = new StringBuilder();
+
         private void Awake()
         {
             SetupValueText();
@@ -37,12 +42,12 @@ namespace tinygrox.DuckovMods.NumericalStats
             }
             catch (OperationCanceledException)
             {
-                Debug.Log("[NumericalHealthDisplay] No waiting for the target.");
+                // Debug.Log("[NumericalHealthDisplay] No waiting for the target.");
                 return;
             }
             catch (TimeoutException)
             {
-                Debug.Log("[NumericalHealthDisplay] Timeout for the target.");
+                // Debug.Log("[NumericalHealthDisplay] Timeout for the target.");
                 return;
             }
 
@@ -58,7 +63,9 @@ namespace tinygrox.DuckovMods.NumericalStats
             if (!_currentTarget.IsDead)
             {
                 _currentTarget.OnHealthChange.RemoveListener(UpdateHealthText);
+                _currentTarget.OnMaxHealthChange.RemoveListener(UpdateHealthText);
                 _currentTarget.OnHealthChange.AddListener(UpdateHealthText);
+                _currentTarget.OnMaxHealthChange.AddListener(UpdateHealthText);
 
                 UpdateHealthText();
 
@@ -97,7 +104,7 @@ namespace tinygrox.DuckovMods.NumericalStats
 
             if (_currentTarget is null || _currentTarget.IsDead || _currentTarget.IsMainCharacterHealth)
             {
-                Debug.Log($"[NumericalHealthDisplayOnDestroy] _currentTarget is null({_currentTarget is null}) or _currentTarget.IsDead({_currentTarget?.IsDead}) or _currentTarget.IsMainCharacterHealth({_currentTarget?.IsMainCharacterHealth}).");
+                // Debug.Log($"[NumericalHealthDisplayOnDestroy] _currentTarget is null({_currentTarget is null}) or _currentTarget.IsDead({_currentTarget?.IsDead}) or _currentTarget.IsMainCharacterHealth({_currentTarget?.IsMainCharacterHealth}).");
                 return;
             }
 
@@ -130,14 +137,14 @@ namespace tinygrox.DuckovMods.NumericalStats
             containerRect.anchorMin = new Vector2(0.5f, 0.5f);
             containerRect.anchorMax = new Vector2(0.5f, 0.5f);
             containerRect.pivot = new Vector2(0.5f, 0.5f);
-            containerRect.anchoredPosition = Vector2.zero;
+            containerRect.anchoredPosition = new Vector2(0, 1);
 
             // containerRect.sizeDelta = new Vector2(100f, 20f);
             _valueText = Instantiate(GameplayDataSettings.UIStyle.TemplateTextUGUI, containerGo.transform);
             _valueText.gameObject.name = "ValueText";
             _valueText.alignment = TextAlignmentOptions.Center;
             _valueText.fontSizeMin = 13f;
-            _valueText.fontSizeMax = 16f;
+            _valueText.fontSizeMax = 15f;
             _valueText.enableAutoSizing = true;
             _valueText.fontStyle = FontStyles.Bold;
             _valueText.enableWordWrapping = false;
@@ -151,7 +158,10 @@ namespace tinygrox.DuckovMods.NumericalStats
 
         private void SetNameChangedTextActiveSelfToValue(bool value)
         {
-            if (_nameText is null || _currentTarget is null || _currentTarget.IsMainCharacterHealth || _currentTarget.IsDead || _currentTarget.TryGetCharacter().characterPreset.showName) return;
+            if (_nameText is null || _currentTarget is null || _currentTarget.IsMainCharacterHealth || _currentTarget.IsDead) return;
+            CharacterMainControl character = _currentTarget.TryGetCharacter();
+            if (character is null || character.characterPreset.showName) return;
+
             _nameText.gameObject.SetActive(value);
         }
         private void UpdateHealthText()
@@ -160,10 +170,23 @@ namespace tinygrox.DuckovMods.NumericalStats
             {
                 return;
             }
+            _stringBuilder.Clear();
 
-            float currentHealth = Mathf.CeilToInt(_currentTarget.CurrentHealth);
-            float maxHealth = Mathf.CeilToInt(_currentTarget.MaxHealth);
-            _valueText.SetText("{0}/{1}", currentHealth, maxHealth);
+            float currentHealth = _currentTarget.CurrentHealth; // Mathf.CeilToInt(_currentTarget.CurrentHealth);
+            float maxHealth = _currentTarget.MaxHealth; // Mathf.CeilToInt(_currentTarget.MaxHealth);
+            _stringBuilder.Append(currentHealth.ToString("0.#"));
+            _stringBuilder.Append("/");
+            _stringBuilder.Append(maxHealth.ToString("0.#"));
+            _valueText.SetText(_stringBuilder);
+            // if (Mathf.Approximately(currentHealth % 1, 0))
+            // {
+            //     _valueText.SetText("{0:0}/{1:0}", currentHealth, maxHealth);
+            // }
+            // else
+            // {
+            //     _valueText.SetText("{0:0.0}/{1:0}", currentHealth, maxHealth);
+            // }
+            // _valueText.SetText("{0:0.#}/{1:0}", currentHealth, maxHealth);
         }
 
         private void UpdateHealthText(Health health)

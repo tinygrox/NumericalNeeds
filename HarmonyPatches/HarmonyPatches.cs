@@ -1,31 +1,51 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Duckov.Options.UI;
 using Duckov.UI;
-using HarmonyLib;
 using SodaCraft.Localizations;
 using tinygrox.DuckovMods.NumericalStats.OptionsProviders;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
-using VLB;
 
-namespace tinygrox.DuckovMods.NumericalStats
+namespace tinygrox.DuckovMods.NumericalStats.HarmonyPatches
 {
     public static class HarmonyPatches
     {
         public const string MyModSettingsButtonName = "NumericalStatsSettingsButton";
+
         // HealthBarManager.CreateHealthBarFor
         public static void HealthBarAddNumericalHealthDisplay(HealthBar __result)
         {
+            if (__result?.gameObject is null || __result.target is null) return;
+
             if (__result.gameObject.TryGetComponent<NumericalHealthDisplay>(out _))
             {
                 return;
             }
             __result.gameObject.AddComponent<NumericalHealthDisplay>();
+        }
+
+        public static void MustShowHealthBar(Health __instance)
+        {
+            var mc = __instance.TryGetCharacter();
+
+            if (mc?.characterModel is null) return;
+
+            if (mc.characterModel.invisable) return;
+
+            if (!__instance.showHealthBar && __instance.team != Teams.player)
+            {
+                __instance.showHealthBar = ModSettings.MustShowHealthBar;
+            }
+        }
+
+        public static void HealthBarForNonHealthBar(HealthSimpleBase __instance)
+        {
+            if (__instance.gameObject.TryGetComponent<HealthSimpleBaseDisplayBar>(out _))
+            {
+                return;
+            }
+            __instance.gameObject.AddComponent<HealthSimpleBaseDisplayBar>();
         }
         // 添加我们的设置面板，难点不是添加，而是怎么创建一个新的 OptionsPanel_TabButton
         // 应该要在 OptionsPanel.Setup 进行 Patch
@@ -42,7 +62,7 @@ namespace tinygrox.DuckovMods.NumericalStats
                 Debug.Log("myTabButton is null");
                 return;
             }
-            myTabButton.gameObject.name = MyModSettingsButtonName;
+            myTabButton.gameObject.name = MyModSettingsButtonName; // 好像多余了
 
             // 拿 Common
             var buttonContainer = ___tabButtons.FirstOrDefault()?.transform.parent;
@@ -71,10 +91,14 @@ namespace tinygrox.DuckovMods.NumericalStats
 
             ModSettings.SetTabButtonTabObjDelegate(myTabButton, myTabPanel);
             myTabPanel.transform.SetParent(myTabButton.transform.parent.parent.Find("ScrollView/Viewport/Content"), false);
+            myTabPanel.transform.localScale = Vector3.one;
             CreateSimpleOption<NumericalVitalsOptionProvider>(myTabPanel.transform, "ShowNumericalWaterAndEnergy");
             CreateSimpleOption<HealthBarNumericalDisplayOptionProvider>(myTabPanel.transform, "ShowNumericalHealth");
             CreateSimpleOption<ShowEnemyNameOptionProvider>(myTabPanel.transform, "ShowEnemyName");
             CreateSimpleOption<ArmourStatsOptionProvider>(myTabPanel.transform, "ShowArmourStats");
+            CreateSimpleOption<MustShowHealthBarProvider>(myTabPanel.transform, "MustShowHealthBar");
+            CreateSimpleOption<ShowHealthBarForObjectsProvider>(myTabPanel.transform, "ShowHealthBarForObjects");
+            CreateSimpleOption<EditUIProvider>(myTabPanel.transform, "NumericalStats_EditUI");
 
             ___tabButtons.Add(myTabButton);
         }
