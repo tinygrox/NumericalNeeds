@@ -15,7 +15,7 @@
         <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace>tinygrox.DuckovMods.NumericalStats</RootNamespace>
         <AssemblyName>tinygrox.DuckovMods.NumericalStats</AssemblyName>
-        <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
+        <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

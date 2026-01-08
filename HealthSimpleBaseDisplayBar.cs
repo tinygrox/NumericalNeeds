@@ -155,14 +155,10 @@ namespace tinygrox.DuckovMods.NumericalStats
         {
             if(!_healthProxy) return;
             _hideHealthBarCts?.Cancel();
-
-            s_setCurrentHealthDelegate(_healthProxy, 0);
+            // s_setCurrentHealthDelegate(_healthProxy, 0);
+            _healthBarInstance = GetHealthBarForProxy(_healthProxy);
+            _healthBarInstance?.gameObject.SetActive(false);
             _healthProxy.OnDeadEvent?.Invoke(damageInfo);
-
-            if (gameObject)
-            {
-                gameObject.SetActive(false);
-            }
         }
 
         private void OnDestroy()

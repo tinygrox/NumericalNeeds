@@ -52,6 +52,8 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
-/.idea
-/packages
-*.user
+*.DotSettings.user
+.idea/
+.vscode/
+packages/
+packages.config
